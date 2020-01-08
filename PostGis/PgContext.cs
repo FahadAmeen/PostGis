@@ -17,6 +17,7 @@ namespace PostGis
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+            builder.HasPostgresExtension("postgis");
             
         }
         public DbSet<FakeClass> fake { get; set; }
