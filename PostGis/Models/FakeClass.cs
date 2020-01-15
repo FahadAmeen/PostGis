@@ -13,6 +13,6 @@ namespace PostGis.Models
         public string Name { get; set; }
         [Column(TypeName = "geography")]
         public Point Location { get; set; }
-
+        public Polygon polygon { get; set; }
     }
 }

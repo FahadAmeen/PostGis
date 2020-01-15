@@ -1,10 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Nancy.Json;
+using NetTopologySuite.Geometries;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using PostGis;
 using PostGis.Models;
 
@@ -25,6 +30,25 @@ namespace PostGis.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<FakeClass>>> Getfake()
         {
+
+            using (StreamReader r = new StreamReader("islamabadArea.json"))
+            {
+                var jsondata = r.ReadToEnd();
+                var myJObject = JObject.Parse(jsondata);
+                //var t = myJObject.SelectToken("geometries.type").Value<string>();
+                var jsonData = JsonConvert.DeserializeObject<PolygonDTO>(jsondata);
+               
+                var geometry = jsonData.geometries;
+                var coor = geometry[0].coordinates[0][0];
+                List<Coordinate> items = new List<Coordinate>();
+                foreach (var coordinate in coor)
+                {
+                    Coordinate c = new Coordinate(coordinate[0], coordinate[1]);
+                    items.Add(c);
+                }
+                   
+            }
+
             return await _context.fake.ToListAsync();
         }
 
@@ -78,12 +102,56 @@ namespace PostGis.Controllers
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for
         // more details see https://aka.ms/RazorPagesCRUD.
         [HttpPost]
-        public async Task<ActionResult<FakeClass>> PostFakeClass(FakeClass fakeClass)
+        public async Task<ActionResult<FakeClass>> PostFakeClass()
         {
-            _context.fake.Add(fakeClass);
-            await _context.SaveChangesAsync();
+            List<Coordinate> items = new List<Coordinate>();
+            using (StreamReader r = new StreamReader("islamabadArea.json"))
+            {
+                var jsondata = r.ReadToEnd();
+                var myJObject = JObject.Parse(jsondata);
+                //var t = myJObject.SelectToken("geometries.type").Value<string>();
+                var jsonData = JsonConvert.DeserializeObject<PolygonDTO>(jsondata);
 
-            return CreatedAtAction("GetFakeClass", new { id = fakeClass.Id }, fakeClass);
+                var geometry = jsonData.geometries;
+                var coor = geometry[0].coordinates[0][0];
+                
+                foreach (var coordinate in coor)
+                {
+                    Coordinate c = new Coordinate(coordinate[0], coordinate[1]);
+                    items.Add(c);
+                }
+
+            }
+
+
+
+
+
+            FakeClass fakeClass=new FakeClass();
+            fakeClass.Name = "point";
+            fakeClass.Location = new Point(0, 0);
+            Polygon polygon1 = new Polygon(new LinearRing(new Coordinate[] { new Coordinate(0,0), new Coordinate(1,0), 
+                new Coordinate(1,1), new Coordinate(0,1), new Coordinate(0,0) }));
+            Polygon polygon = new Polygon(new LinearRing(items.ToArray()));
+
+            fakeClass.polygon = polygon;
+
+            var a=_context.fake.Add(fakeClass);
+            fakeClass.Name = fakeClass.polygon.Area.ToString();
+            
+            await _context.SaveChangesAsync();
+            //try {
+
+            //    var json = new JavaScriptSerializer().Serialize(fakeClass);
+            //    return Ok(json);
+            //} catch (Exception e)
+            //{
+            //    return NotFound();
+            //}
+            //return CreatedAtAction("GetFakeClass", new { id = fakeClass.Id }, fakeClass);
+            var json = JsonConvert.SerializeObject(a.Entity);
+            return Content(json);
+        
         }
 
         // DELETE: api/FakeClasses/5
