@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Text;
 
-namespace PostGis.Models
+namespace AL.ERA.App.MockData.Models
 {
-    public class RootObject
+    public class CoordinateList
     {
         public string name { get; set; }
         public List<List<string>> locations { get; set; }
     }
-
 }

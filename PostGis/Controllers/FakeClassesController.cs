@@ -54,10 +54,20 @@ namespace PostGis.Controllers
                     }
                     coordinateListList.Add(coordinateList);
                 }
+                var polygonList = GetPolygons(coordinateListList).ToList();
+
             }
 
 
+
             return Ok();
+        }
+        private IEnumerable<Polygon> GetPolygons(List<List<Coordinate>> coordinateListList)
+        {
+            foreach(var polygon in coordinateListList)
+            {
+                yield return new Polygon(new LinearRing(polygon.ToArray()));
+            }
         }
         private decimal DegreeToDecimal(decimal d, decimal m, decimal s) { return d + (m / 60) + (s / 3600); }
         private decimal GetDegreeToDecimal(string n)

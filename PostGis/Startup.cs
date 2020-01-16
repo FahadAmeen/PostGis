@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AL.ERA.App.MockData.Interfaces;
+using AL.ERA.App.MockData.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -29,6 +31,7 @@ namespace PostGis
             services.AddControllers();
             services.AddEntityFrameworkNpgsql().AddDbContext<PgContext>(options =>
             options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection"), x => x.UseNetTopologySuite()));
+            services.AddTransient<IMockData, MockDataService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
